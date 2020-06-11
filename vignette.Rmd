@@ -1,0 +1,86 @@
+---
+output:
+  html_document: default
+  pdf_document: default
+---
+---
+title: "vignette"
+author: "YInglin Luo"
+date: "6/8/2020"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{vignette}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+  
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+# Vignette
+```{r setup, echo=FALSE, results='hide'}
+library(tidyverse)
+library(blblm)
+library(purrr)
+```
+
+
+I choose "mtcars" data set as my data to test "blblm" package, and 250 samples form this data set as my test data. 
+
+```{r, echo=FALSE}
+### Read in data Set
+df <- mtcars
+vignette_sample <- df[1:250,]
+```
+
+The main object of this package is to let users do a bag of little bootstrap with linear regression models and logistics regression model. This package includes some usual function which do the little bootstrap at first and calculate the coefficient and sigma for each subsample. After that, it will return the mean coefficients and mean sigma as the final output for our final model. 
+
+- This package exports linear regression model functions,logistic regression model,coefficients calaulation, confidence interval of coefficients, the mean sigma for all subsamples, and Predict new values for new data set by the model.
+
+  - `blblm()`  Bag of Little Bootstrap for Linear Regression Model
+  - `blbglm()` Bag of Little Bootstrap for logistics Regression Model
+  - `par_blblm()`  Bag of Little Bootstrap for Linear Regression Model
+  - `par_blbglm()` Bag of Little Bootstrap for logistics Regression Model
+  - `coef()`   Calculate the mean coefficients for all subsamples
+  - `confint()`Calculate the confidence interval of coefficients
+  - `sigma()`  Calculate the mean sigma for all subsamples, also provide confidence interval for sigmas
+  - `predict.blblm()`Predict values for new_data by given model, also provide confidence interval for values
+
+Use 'lm_each_subsample' function to compute the estimates for each subsample and fit linear regression model for each subsample B times. 
+
+Use 'lm_each_boot' to compute the linear regression estimates for a bag of little bootstraps.
+Here 'lm_each_boot' is being called directly. However, it is typically called within another function using multiple boots, such as 'lm_each_subsample.'
+
+Use 'lm1' to fit a linear regression model with prescribed frequencies.
+Here 'lm1' is fitting a llinear regression model by using orginal data, given the frequencies. We can get the coefficient and sigma of our linear regression model.
+Like 'lm_each_boot', lm1 is helpful when called within another function working with boots.
+
+Use 'blbcoef' funtion to compute the cofficients from fit model. 
+After we got the cofficients, we can fit the linear regression model for each subsample. 
+
+Use 'blbsigma' to compute sigma from fit model.
+
+Pass a fitted model and test data  to 'predict.blblm'.
+The returned values are probabilities the outcome is number. Here a basic cutoff is assigned using round. 
+
+'blbglm' is one of the more powerful functions in the library.
+'blbglm' fits a logistic model using BLB with m boots and B resamples.
+The fits returned may be passed to other function for further utility.
+
+```{r,error=TRUE}
+lm <- blblm(mpg ~ wt * hp, data = vignette_sample, m = 2, B = 200)
+coef(lm)
+confint(lm, c("wt", "hp"))
+sigma(lm)
+sigma(lm, confidence = TRUE)
+predict.blblm(lm, data.frame(wt = c(2, 3), hp = c(120, 170)),confidence = FALSE)
+predict.blblm(lm, data.frame(wt = c(2, 3), hp = c(120, 170)), confidence = TRUE)
+```
+
+
+
+
+
